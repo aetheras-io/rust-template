@@ -1,0 +1,16 @@
+.env*
+
+# Aetheras Defaults
+.DS_Store
+dist/
+
+# cargo defaults
+debug/
+target/
+**/node_modules
+
+# rustfmt backups
+**/*.rs.bk
+
+# MSVC pdbs
+*.pdb

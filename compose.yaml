@@ -1,0 +1,126 @@
+networks:
+  local:
+
+services:
+  {{ project-name | kebab_case }}:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: {{docker_repo}}/{{ project-name | kebab_case }}:latest
+    container_name: {{ project-name | kebab_case }}
+    ports:
+      - 3030:3030
+    environment:
+      {{ project-name | shouty_snake_case }}_POSTGRES: postgres://postgres:123456@postgres:5432/postgres?sslmode=disable
+      {{ project-name | shouty_snake_case }}_HOST: 0.0.0.0:3030
+      {{ project-name | shouty_snake_case }}_TEMPORAL: http://temporal:7233
+      {{ project-name | shouty_snake_case }}_TEMPORAL_NAMESPACE: default
+      {{ project-name | shouty_snake_case }}_TEMPORAL_TASK_QUEUE: default
+      RUST_BACKTRACE: full
+    depends_on:
+      - postgres
+      - temporal
+    networks:
+      - local
+
+  {{ project-name | kebab_case }}-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: {{docker_repo}}/{{ project-name | kebab_case }}:latest
+    container_name: {{ project-name | kebab_case }}-worker
+    command: "worker"
+    environment:
+      {{ project-name | shouty_snake_case }}_TEMPORAL: http://temporal:7233
+      {{ project-name | shouty_snake_case }}_TEMPORAL_NAMESPACE: default
+      {{ project-name | shouty_snake_case }}_TEMPORAL_TASK_QUEUE: default
+    depends_on:
+      - temporal
+    networks:
+      - local
+
+  postgres:
+    image: postgres:18
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: 123456
+    networks:
+      - local
+
+  adminer:
+    image: adminer:5
+    container_name: adminer
+    ports:
+      - 8888:8080
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DEFAULT_DRIVER: pgsql
+      ADMINER_DEFAULT_DB: postgres
+      ADMINER_DEFAULT_USERNAME: postgres
+      ADMINER_DEFAULT_PASSWORD: 123456
+      ADMINER_DEFAULT_SCHEMA: public
+    networks:
+      - local
+
+  temporal:
+    image: temporalio/auto-setup:1.29.1
+    container_name: temporal
+    depends_on:
+      - postgres
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=123456
+      - POSTGRES_SEEDS=postgres
+      - SQL_MAX_CONNS=5
+      - SQL_MAX_IDLE_CONNS=2
+      - SQL_VIS_MAX_CONNS=5
+      - SQL_VIS_MAX_IDLE_CONNS=2
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/dynamicconfig.yaml
+    ports:
+      - 7233:7233
+    volumes:
+      - ./deployment:/etc/temporal/config/dynamicconfig
+    networks:
+      - local
+
+  temporal-ui:
+    image: temporalio/ui:2.43.3
+    container_name: temporal-ui
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_CORS_ORIGINS: http://localhost:3030
+    depends_on:
+      - temporal
+    ports:
+      - 8080:8080
+    networks:
+      - local
+
+  temporal-admin-tools:
+    image: temporalio/admin-tools:1.29.0-tctl-1.18.4-cli-1.4.2
+    container_name: temporal-admin-tools
+    depends_on:
+      - temporal
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    networks:
+      - local
+
+  k6-stress:
+    image: grafana/k6:1.3.0
+    command: ["run", "/scripts/basic.js"]
+    profiles:
+      - stresstest
+    environment:
+      BASE_URL: ${BASE_URL}
+      REST_BASE_URL: http://host.docker.internal:3030
+      LOG_API_IO: ${LOG_API_IO}
+    volumes:
+      - ./deployment/stresstest:/scripts:ro
+    restart: "no"
+    networks:
+      - local

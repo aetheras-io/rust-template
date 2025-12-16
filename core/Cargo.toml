@@ -1,0 +1,34 @@
+[package]
+name = "{{project-name}}-core"
+version.workspace = true
+authors.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+once_cell = { workspace = true }
+sqlx = { workspace = true }
+atb = { workspace = true }
+atb-types = { workspace = true }
+atb-serde-ext = { workspace = true }
+atb-tokio-ext = { workspace = true }
+atb-temporal-ext = { workspace = true }
+atb-graphql-ext = { workspace = true }
+
+temporalio-client = { git = "https://github.com/temporalio/sdk-core", rev = "b5a473d425e7d63a49f3bbcb08767b9ff46207d0" }
+temporalio-common = { git = "https://github.com/temporalio/sdk-core", rev = "b5a473d425e7d63a49f3bbcb08767b9ff46207d0" }
+temporalio-sdk = { git = "https://github.com/temporalio/sdk-core", rev = "b5a473d425e7d63a49f3bbcb08767b9ff46207d0" }
+temporalio-sdk-core = { git = "https://github.com/temporalio/sdk-core", rev = "b5a473d425e7d63a49f3bbcb08767b9ff46207d0" }
+
+[features]
+default = []
+temporal-tests = ["temporalio-sdk-core/ephemeral-server"]

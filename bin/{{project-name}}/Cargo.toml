@@ -1,0 +1,50 @@
+[package]
+name = "{{project-name}}-app"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish = false
+
+[[bin]]
+name = "{{ project-name | kebab_case }}"
+path = "src/main.rs"
+
+[dependencies]
+{{project-name}}-core = { path = "../../core" }
+
+atb = { workspace = true }
+atb-types = { workspace = true }
+atb-serde-ext = { workspace = true }
+atb-tokio-ext = { workspace = true }
+atb-graphql-ext = { workspace = true }
+
+sqlx = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
+
+atb-cli-utils = { git = "https://github.com/aetheras-io/atb-rs", tag = "v1.4.9" }
+axum = { version = "0.8", features = ["macros", "ws"] }
+axum-client-ip = "1"
+axum-extra = { version = "0.12", features = ["typed-header"] }
+async-graphql = { version = "7", features = [
+  "uuid",
+  "chrono",
+  "chrono-tz",
+  "dataloader",
+] }
+async-graphql-axum = { version = "7" }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace", "request-id"] }
+mini-moka = "0.10"
+clap = { version = "4", features = ["derive", "env"] }
+validator = { version = "0.20.0", features = ["derive"] }
+rand.workspace = true
+base64.workspace = true
+
+[build-dependencies]
+atb-build-utils = { git = "https://github.com/aetheras-io/atb-rs", tag = "v1.4.9" }

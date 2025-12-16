@@ -1,0 +1,13 @@
+[template]
+description = "Rust API Bootstrap (Postgres, GraphQL, Temporal)"
+ignore = ["hooks", "dev", ".git/**", "target", "Cargo.lock"]
+exclude = ["deployment/dynamicconfig.yaml"]
+
+[placeholders]
+author = { prompt = "Author", default = "Denis Tsai", type = "string" }
+email = { prompt = "Email", default = "denistsai@aetheras.io", type = "string" }
+org = { prompt = "Organization", default = "aetheras-io", type = "string" }
+docker_repo = { prompt = "Docker Registry", default = "gcr.io", type = "string" }
+
+[hooks]
+post = ["post-script.rhai"]

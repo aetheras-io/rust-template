@@ -1,0 +1,63 @@
+# Temporal dynamic config for Server 1.28.x
+limit.maxIDLength:
+  - value: 255
+    constraints: {}
+
+# Visibility (leave off unless you're migrating to a secondary store)
+system.secondaryVisibilityWritingMode:
+  - value: "off"
+    constraints: {}
+system.enableReadFromSecondaryVisibility:
+  - value: false
+    constraints: {}
+
+# Worker Versioning APIs
+frontend.workerVersioningDataAPIs:
+  - value: true
+    constraints: {}
+frontend.workerVersioningWorkflowAPIs:
+  - value: true
+    constraints: {}
+frontend.workerVersioningRuleAPIs:
+  - value: true
+    constraints: {}
+
+# Deployments / Safe Deploys
+system.enableDeploymentVersions:
+  - value: true
+    constraints: {}
+system.enableDeployments:
+  - value: true
+    constraints: {}
+
+# Multi-operation (e.g., Update-with-Start)
+frontend.enableExecuteMultiOperation:
+  - value: true
+    constraints: {}
+
+# Nexus (durable external calls)
+system.enableNexus:
+  - value: false
+    constraints: {}
+# component.nexusoperations.callback.endpoint.template:
+#   - value: http://localhost:7243/namespaces/{{.NamespaceName}}/nexus/callback
+#     constraints: {}
+# component.callbacks.allowedAddresses:
+#   - value:
+#       - Pattern: "*"
+#         AllowInsecure: true
+#     constraints: {}
+
+# Matching / History tuning
+matching.queryWorkflowTaskTimeoutLogRate:
+  - value: 1.0
+    constraints: {}
+history.ReplicationEnableUpdateWithNewTaskMerge:
+  - value: true
+    constraints: {}
+history.hostLevelCacheMaxSize:
+  - value: 8192
+    constraints: {}
+history.enableTransitionHistory:
+  - value: true
+    constraints: {}
