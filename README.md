@@ -11,12 +11,18 @@ Starter kit for building Rust services at Aetheras. It scaffolds an HTTP API plu
 
 ## Generate a new project
 
+Install [cargo-generate](https://github.com/cargo-generate/cargo-generate)
+
+```sh
+cargo install cargo-generate
 ```
+
+```sh
 cargo generate --git git@github.com:aetheras-io/rust-template.git --name my-service
 ```
 
 If you prefer HTTPS instead of SSH, use a personal access token (with `repo` scope) and supply it in the URL:
 
-```
+```sh
 cargo generate --git https://github.com/aetheras-io/rust-template.git --name my-service
 ```
