@@ -1,11 +1,22 @@
-# {{project-name | upper_camel_case}}
+# Aetheras Rust Template
 
-This project was bootstrapped from <https://github.com/aetheras-io/rust-template>.
+Starter kit for building Rust services at Aetheras. It scaffolds an HTTP API plus Temporal worker, wires in PostgreSQL, and ships a ready-to-run local stack via Docker Compose. Common tooling (Justfile tasks, formatting, linting, and cargo-generate hooks) is preconfigured so you can start shipping features immediately.
 
-## Quick start
+## What you get
 
-- Menu: `just`
-- Build locally: `just build`
-- Run HTTP server: `just run`
-- Run worker: `just worker`
-- Start Dev Stack: `just local`
+- HTTP server and worker binaries sharing a core crate
+- Temporal + UI, PostgreSQL, and Adminer for local development
+- Dockerfile and `compose.yaml` for build/test stacks
+- `just` commands for build, run, worker, and dev stack orchestration
+
+## Generate a new project
+
+```
+cargo generate --git git@github.com:aetheras-io/rust-template.git --name my-service
+```
+
+If you prefer HTTPS instead of SSH, use a personal access token (with `repo` scope) and supply it in the URL:
+
+```
+cargo generate --git https://github.com/aetheras-io/rust-template.git --name my-service
+```

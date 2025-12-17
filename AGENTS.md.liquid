@@ -140,8 +140,6 @@ DO NOT MODIFY FILES THAT ARE CREATED BY CODEGEN such as gql.ts or graphql.ts, sc
 
 We register activities with the helper macros re-exported from `atb_temporal_ext`. Import them with `use atb_temporal_ext::{activity, local_activity};`, annotate each activity, and then call the generated `bind_*` helpers instead of manual `worker.register_activity` calls.
 
-_SDK note_: newer Temporal SDK versions renamed many `FooOptionsBuilder` types to `FooOptions::builder()` and most `build()` methods now return `Result<T, String>`. Expect to call `.expect(...)`/`map_err(...)` accordingly instead of `?` that expected a real error type.
-
 #### Running a Worker and Starting a Workflow
 
 ```rust
