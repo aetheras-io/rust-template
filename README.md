@@ -1,6 +1,6 @@
 # Aetheras Rust Template
 
-Starter kit for building Rust services at Aetheras. It scaffolds an HTTP API plus Temporal worker, wires in PostgreSQL, and ships a ready-to-run local stack via Docker Compose. Common tooling (Justfile tasks, formatting, linting, and cargo-generate hooks) is preconfigured so you can start shipping features immediately.
+Starter kit for building Rust services at Aetheras. It scaffolds an HTTP API plus Temporal worker, wires in PostgreSQL, and ships a ready-to-run local stack via Docker Compose. Common tooling (Justfile tasks, formatting, linting) is preconfigured so you can start shipping features immediately.
 
 ## What you get
 
