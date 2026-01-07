@@ -81,6 +81,8 @@ local-temporal: local-pg
 	docker compose -f {{ "{{" }}ROOT_DIR{{ "}}" }}/compose.yaml up -d temporal temporal-ui temporal-admin-tools; \
 	sleep 3
 
+local-dev: local-temporal dev
+
 ###########################################################
 ### Testing
 
