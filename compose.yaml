@@ -6,7 +6,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: {{docker_repo}}/{{ project-name | kebab_case }}:latest
+    image: {{docker_repo}}/{{org}}/{{ project-name | kebab_case }}:latest
     container_name: {{ project-name | kebab_case }}
     ports:
       - 3030:3030
@@ -27,7 +27,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: {{docker_repo}}/{{ project-name | kebab_case }}:latest
+    image: {{docker_repo}}/{{org}}/{{ project-name | kebab_case }}:latest
     container_name: {{ project-name | kebab_case }}-worker
     command: "worker"
     environment:
