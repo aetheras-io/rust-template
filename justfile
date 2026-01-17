@@ -4,7 +4,7 @@ REPO := "https://github.com" / ORG / PROJECT
 ROOT_DIR := justfile_directory()
 OUTPUT_DIR := ROOT_DIR / "target"
 SEM_VER := `awk -F' = ' '$1=="version"{print $2;exit;}' ./Cargo.toml`
-DOCKER_REGISTRY := "{{docker_repo}}/{{org}}/{{ project-name | kebab_case }}"
+DOCKER_REGISTRY := "{{docker_repo}}/{{org}}"
 
 # Paths to built binaries (macOS/Linux)
 BIN := OUTPUT_DIR / "debug" / PROJECT
@@ -35,12 +35,12 @@ build-docker:
     docker build --platform=linux/amd64 \
         --progress plain \
         -f ./Dockerfile \
-        -t {{ "{{" }}DOCKER_REGISTRY{{ "}}" }}:latest \
-        -t {{ "{{" }}DOCKER_REGISTRY{{ "}}" }}:v{{ "{{" }}SEM_VER{{ "}}" }} .
+        -t {{ "{{" }}DOCKER_REGISTRY{{ "}}" }}/{{ project-name | kebab_case }}:latest \
+        -t {{ "{{" }}DOCKER_REGISTRY{{ "}}" }}/{{ project-name | kebab_case }}:v{{ "{{" }}SEM_VER{{ "}}" }} .
 
 docker-push:
-    docker push {{ "{{" }}DOCKER_REGISTRY{{ "}}" }}:latest
-    docker push {{ "{{" }}DOCKER_REGISTRY{{ "}}" }}:v{{ "{{" }}SEM_VER{{ "}}" }}
+    docker push {{ "{{" }}DOCKER_REGISTRY{{ "}}" }}/{{ project-name | kebab_case }}:latest
+    docker push {{ "{{" }}DOCKER_REGISTRY{{ "}}" }}/{{ project-name | kebab_case }}:v{{ "{{" }}SEM_VER{{ "}}" }}
     docker image prune -f
 
 ###########################################################
