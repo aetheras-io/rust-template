@@ -35,13 +35,6 @@ cd core && cargo test ${specific_test_name}
 - JSON: `jq`
 - YAML/XML: `yq`
 
-## Efficiency and Speed
-
-**IMPORTANT**
-Do NOT RUN LINTING, TESTS, BUILD, OR CODEGEN commands unless asked to do so.  Many are nuanced and require the whole docker compose environment to be available.
-DO NOT MODIFY FILES THAT ARE CREATED BY CODEGEN such as gql.ts or graphql.ts, schema.graphql files
-**IMPORTANT**
-
 ## Backend Coding Practices
 
 - **Workspace layout**: Application logic is split between a binary crate under
@@ -72,7 +65,9 @@ DO NOT MODIFY FILES THAT ARE CREATED BY CODEGEN such as gql.ts or graphql.ts, sc
 We register activities with the helper macros re-exported from `atb_temporal_ext`.
 Reference the existing wiring instead of copying new boilerplate:
 
-- `core/src/temporal/mod.rs` centralizes Temporal client setup and helpers.
+- `core/src/temporal/mod.rs` centralizes Temporal client setup, plus example
+  workflow and activity definitions like the `#[activity]` macro. Use this as
+  the reference for creating new workflows and activities.
 - `bin/{{ project-name | kebab_case }}/src/worker.rs` shows how workers are
   created and tasks registered.
 - `bin/{{ project-name | kebab_case }}/src/http.rs` and
