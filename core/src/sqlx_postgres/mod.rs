@@ -1,4 +1,5 @@
 pub mod example;
+pub mod users;
 
 pub use sqlx::{
     Connection, Error as SqlxError,
