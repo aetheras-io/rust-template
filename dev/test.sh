@@ -9,6 +9,9 @@ BASE="$ROOT/target/demo_base"
 EDIT="$ROOT/target/demo_edit"
 mkdir -p "$ROOT/target" >/dev/null
 
+echo "Refreshing generated workspaces"
+rm -rf "$BASE" "$EDIT"
+
 echo "Generating baseline -> $BASE"
 cargo generate --path "$ROOT" --destination "$ROOT/target" --overwrite --name demo_base \
   --define org=testorg --define docker_repo=gcr.io --silent
@@ -16,4 +19,4 @@ cargo generate --path "$ROOT" --destination "$ROOT/target" --overwrite --name de
 echo "Copying editable working copy -> $EDIT"
 cp -a "$BASE" "$EDIT"
 
-echo "Done. Edit files in $EDIT. Run ./diff.sh to see changes vs baseline."
+echo "Done. Edit files in $EDIT. Run ./dev/diff.sh to see changes vs baseline."

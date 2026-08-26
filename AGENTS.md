@@ -1,10 +1,13 @@
 # Project Guide for AI Agents
 
-This AGENTS.md file provides comprehensive guidance for AI agents working with
-rust rust-template.  This project is used to bootstrap our in house rust framework 
-with common tooling and patterns.  The development cycle is 
+This project bootstraps the in-house Rust framework with common tooling and
+patterns.
 
 ## Development
 
-This template has scripts `./dev/test.sh` which tries to render the template to the `./target/demo_base` path.  It also makes a `./target/demo_edit/` path.  The `./dev/diff.sh` script is run when `./target/demo_edit/` is modified and needs to be integrated back into the template.  `./dev/diff.sh` will generate a diff file in `./target/demo.patch` if there are diffs with the `./target/demo_base` project.  We can use this diff to decide how to merge these changes back into the current template.
-
+Run `./dev/test.sh` to render the template to `./target/demo_base` and create an
+identical editable copy at `./target/demo_edit`. Make exploratory changes only
+in `demo_edit`, then run `./dev/diff.sh`. The diff is printed and written to
+`./target/demo.patch`; translate that patch back into the placeholder-aware
+template sources. Re-render afterward and run formatting, Clippy, and tests in
+the generated project.

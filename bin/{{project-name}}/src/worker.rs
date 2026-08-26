@@ -1,13 +1,12 @@
-use crate::opts::WorkerOpts;
-use std::{sync::Arc, time::Duration};
-
-use {{ project-name | snake_case }}_core::temporal::{
-    self, CoreRuntime, RuntimeOptions, TelemetryOptions, TemporalClient, TemporalWorker, Worker,
-    WorkerConfig, WorkerTaskTypes, WorkerVersioningStrategy, init_worker,
-};
+use std::time::Duration;
 
 use atb_cli_utils::AtbCli;
 use atb_tokio_ext::shutdown_signal;
+use {{ project-name | snake_case }}_core::temporal::{self, HealthCheckActivities, HealthCheckWorkflow};
+use temporalio_client::Client;
+use temporalio_sdk::{Runtime, Worker, WorkerOptions};
+
+use crate::opts::WorkerOpts;
 
 pub async fn run(opts: WorkerOpts) -> anyhow::Result<()> {
     let client = temporal::try_connect_temporal(
@@ -17,57 +16,46 @@ pub async fn run(opts: WorkerOpts) -> anyhow::Result<()> {
     )
     .await?;
 
-    // Single worker entity per process; scale via pollers/outstanding task limits.
-    let worker_config = worker_config(&opts)?;
-    let handle = std::thread::spawn(move || start_worker(client, worker_config));
+    // A worker owns its current-thread runtime; scale with more processes or worker tuning.
+    let worker_options = worker_options(&opts)?;
+    let handle = std::thread::spawn(move || start_worker(client, worker_options));
 
     handle
         .join()
-        .map_err(|e| anyhow::anyhow!("worker thread panicked: {:?}", e))??;
+        .map_err(|error| anyhow::anyhow!("worker thread panicked: {error:?}"))??;
 
     Ok(())
 }
 
-pub fn worker_config(opts: &WorkerOpts) -> anyhow::Result<WorkerConfig> {
+pub fn worker_options(opts: &WorkerOpts) -> anyhow::Result<WorkerOptions> {
     let client_id = crate::Cli::client_id();
-    WorkerConfig::builder()
-        .namespace(opts.temporal.namespace.clone())
-        .task_queue(opts.temporal.task_queue.clone())
-        .task_types(WorkerTaskTypes::all())
-        .client_identity_override(client_id.clone())
-        .versioning_strategy(WorkerVersioningStrategy::None {
-            build_id: client_id,
-        })
+    WorkerOptions::new(opts.temporal.task_queue.clone())
+        .client_identity_override(client_id)
         .max_cached_workflows(opts.max_cached_workflows)
-        .build()
-        .map_err(|s| anyhow::anyhow!("{s}"))
+        .register_workflow::<HealthCheckWorkflow>()
+        .map(|options| options.register_activities(HealthCheckActivities).build())
+        .map_err(Into::into)
 }
 
-pub fn start_worker(client: TemporalClient, worker_config: WorkerConfig) -> anyhow::Result<()> {
+pub fn start_worker(client: Client, worker_options: WorkerOptions) -> anyhow::Result<()> {
     tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?
         .block_on(async move {
-            let worker = new_worker(client, worker_config)?;
-            worker.run(shutdown_signal()).await?;
+            let runtime = Runtime::new_assume_tokio(Default::default())?;
+            let mut worker = Worker::new(&runtime, client, worker_options)?;
+            let shutdown_worker = worker.shutdown_handle();
+            let shutdown_task = tokio::spawn(async move {
+                shutdown_signal().await;
+                tracing::info!("Temporal worker shutting down from signal");
+                shutdown_worker();
+            });
+
+            tracing::info!("Temporal worker starting");
+            let result = worker.run().await;
+            shutdown_task.abort();
+            result?;
+            tracing::info!("Temporal worker stopped");
             Ok(())
         })
-}
-
-pub fn new_worker(
-    client: TemporalClient,
-    worker_config: WorkerConfig,
-) -> anyhow::Result<TemporalWorker> {
-    let telemetry_options = TelemetryOptions::builder().build();
-    let runtime_options = RuntimeOptions::builder()
-        .telemetry_options(telemetry_options)
-        .build()
-        .map_err(|s| anyhow::anyhow!("{s}"))?;
-
-    let runtime = CoreRuntime::new_assume_tokio(runtime_options)?;
-    let task_queue = worker_config.task_queue.clone();
-    let core_worker = Arc::new(init_worker(&runtime, worker_config, client)?);
-    let worker = Worker::new_from_core(core_worker, task_queue);
-
-    TemporalWorker::new(worker)
 }

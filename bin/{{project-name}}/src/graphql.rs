@@ -3,8 +3,6 @@ use async_graphql::{Context, EmptySubscription, Object, Result, Schema, SchemaBu
 use {{ project-name | snake_case }}_core::temporal::WorkflowEngine;
 use sqlx::PgPool;
 
-pub type AppSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
-
 pub fn schema() -> SchemaBuilder<QueryRoot, MutationRoot, EmptySubscription> {
     Schema::build(QueryRoot, MutationRoot, EmptySubscription)
 }

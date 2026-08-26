@@ -1,4 +1,7 @@
-use crate::{api, opts::*};
+use crate::{
+    api,
+    opts::{DatabaseOpts, HttpOpts, TemporalOpts},
+};
 
 use std::time::Duration;
 
@@ -6,6 +9,7 @@ use atb_cli_utils::AtbCli;
 use atb_tokio_ext::shutdown_signal;
 use {{ project-name | snake_case }}_core::{sqlx_postgres, temporal};
 use sqlx::PgPool;
+use temporalio_client::Client;
 use tokio::net::TcpListener;
 
 pub async fn run(
@@ -27,7 +31,7 @@ pub async fn run(
 
 pub async fn start_http(
     pg_pool: PgPool,
-    client: temporal::TemporalClient,
+    client: Client,
     http_opts: HttpOpts,
     task_queue: String,
 ) -> anyhow::Result<()> {

@@ -1,4 +1,5 @@
-use super::{PgPool, SqlxError, ensure_affected};
+use super::ensure_affected;
+use sqlx::{Error, PgPool};
 use sqlx::{Executor, Postgres};
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -22,11 +23,11 @@ pub struct UserMfaMethod {
 pub trait PgExecutor<'c>: Executor<'c, Database = Postgres> {}
 impl<'c, T: Executor<'c, Database = Postgres>> PgExecutor<'c> for T {}
 
-pub async fn create_user(pool: &PgPool, email: &str) -> Result<User, SqlxError> {
+pub async fn create_user(pool: &PgPool, email: &str) -> Result<User, Error> {
     create_user_with_executor(pool, email).await
 }
 
-pub async fn get_user_by_id(pool: &PgPool, id: sqlx::types::Uuid) -> Result<User, SqlxError> {
+pub async fn get_user_by_id(pool: &PgPool, id: sqlx::types::Uuid) -> Result<User, Error> {
     sqlx::query_as(
         r#"
         SELECT id, email, created_at, updated_at
@@ -39,7 +40,7 @@ pub async fn get_user_by_id(pool: &PgPool, id: sqlx::types::Uuid) -> Result<User
     .await
 }
 
-pub async fn get_user_by_email(pool: &PgPool, email: &str) -> Result<User, SqlxError> {
+pub async fn get_user_by_email(pool: &PgPool, email: &str) -> Result<User, Error> {
     sqlx::query_as(
         r#"
         SELECT id, email, created_at, updated_at
@@ -56,7 +57,7 @@ pub async fn update_user_email(
     pool: &PgPool,
     id: sqlx::types::Uuid,
     email: &str,
-) -> Result<User, SqlxError> {
+) -> Result<User, Error> {
     sqlx::query_as(
         r#"
         UPDATE users
@@ -71,7 +72,7 @@ pub async fn update_user_email(
     .await
 }
 
-pub async fn delete_user(pool: &PgPool, id: sqlx::types::Uuid) -> Result<(), SqlxError> {
+pub async fn delete_user(pool: &PgPool, id: sqlx::types::Uuid) -> Result<(), Error> {
     sqlx::query("DELETE FROM users WHERE id = $1")
         .bind(id)
         .execute(pool)
@@ -84,14 +85,14 @@ pub async fn add_mfa_method(
     user_id: sqlx::types::Uuid,
     kind: &str,
     secret: &str,
-) -> Result<UserMfaMethod, SqlxError> {
+) -> Result<UserMfaMethod, Error> {
     add_mfa_method_with_executor(pool, user_id, kind, secret).await
 }
 
 pub async fn list_mfa_methods(
     pool: &PgPool,
     user_id: sqlx::types::Uuid,
-) -> Result<Vec<UserMfaMethod>, SqlxError> {
+) -> Result<Vec<UserMfaMethod>, Error> {
     sqlx::query_as(
         r#"
         SELECT id, user_id, kind, secret, created_at, updated_at
@@ -105,10 +106,7 @@ pub async fn list_mfa_methods(
     .await
 }
 
-pub async fn delete_mfa_method(
-    pool: &PgPool,
-    mfa_id: sqlx::types::Uuid,
-) -> Result<(), SqlxError> {
+pub async fn delete_mfa_method(pool: &PgPool, mfa_id: sqlx::types::Uuid) -> Result<(), Error> {
     sqlx::query("DELETE FROM user_mfa_methods WHERE id = $1")
         .bind(mfa_id)
         .execute(pool)
@@ -121,7 +119,7 @@ pub async fn create_user_with_mfa(
     email: &str,
     kind: &str,
     secret: &str,
-) -> Result<(User, UserMfaMethod), SqlxError> {
+) -> Result<(User, UserMfaMethod), Error> {
     let mut tx = pool.begin().await?;
     let user = create_user_with_executor(tx.as_mut(), email).await?;
     let mfa = add_mfa_method_with_executor(tx.as_mut(), user.id, kind, secret).await?;
@@ -132,7 +130,7 @@ pub async fn create_user_with_mfa(
 pub async fn create_user_with_executor<'c, T: PgExecutor<'c>>(
     executor: T,
     email: &str,
-) -> Result<User, SqlxError> {
+) -> Result<User, Error> {
     sqlx::query_as(
         r#"
         INSERT INTO users (email)
@@ -150,7 +148,7 @@ pub async fn add_mfa_method_with_executor<'c, T: PgExecutor<'c>>(
     user_id: sqlx::types::Uuid,
     kind: &str,
     secret: &str,
-) -> Result<UserMfaMethod, SqlxError> {
+) -> Result<UserMfaMethod, Error> {
     sqlx::query_as(
         r#"
         INSERT INTO user_mfa_methods (user_id, kind, secret)

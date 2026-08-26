@@ -1,6 +1,6 @@
 use crate::opts::Decoder;
 
-use atb_types::prelude::{Claims as ClaimsInner, NoCustom, jwt::HEADER_RS256};
+use atb_types::prelude::{Claims, NoCustom, jwt::HEADER_RS256};
 use axum::{
     Json, RequestPartsExt,
     extract::{FromRef, FromRequestParts},
@@ -13,24 +13,24 @@ use axum_extra::{
 };
 use serde::{Serialize, de::DeserializeOwned};
 
-pub struct Claims<T = NoCustom>(ClaimsInner<T>);
+pub struct AuthenticatedClaims<T = NoCustom>(Claims<T>);
 
-impl<T> Claims<T> {
+impl<T> AuthenticatedClaims<T> {
     /// Convert to the internal `T`
-    pub fn into_inner(self) -> ClaimsInner<T> {
+    pub fn into_inner(self) -> Claims<T> {
         self.0
     }
 }
 
-impl<T> std::ops::Deref for Claims<T> {
-    type Target = ClaimsInner<T>;
+impl<T> std::ops::Deref for AuthenticatedClaims<T> {
+    type Target = Claims<T>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<S, T> FromRequestParts<S> for Claims<T>
+impl<S, T> FromRequestParts<S> for AuthenticatedClaims<T>
 where
     S: Send + Sync,
     Decoder: FromRef<S>,
@@ -45,17 +45,17 @@ where
             .await
             .map_err(|_| AuthError::InvalidToken)?;
         let decoder = Decoder::from_ref(state);
-        let claims = ClaimsInner::<T>::decode_custom(bearer.token(), &HEADER_RS256, &decoder.0)
+        let claims = Claims::<T>::decode_custom(bearer.token(), &HEADER_RS256, &decoder.0)
             .map_err(|_| AuthError::InvalidToken)?;
         if claims.issuer() != "tt" || !validate_expiry_custom(&claims) {
             return Err(AuthError::InvalidToken);
         }
-        Ok(Claims(claims))
+        Ok(AuthenticatedClaims(claims))
     }
 }
 
-//#TODO: This shouldn't be needed, but ClaimsInner doesn't seem to validate customs correctly
-fn validate_expiry_custom<T>(claims: &ClaimsInner<T>) -> bool
+//#TODO: This shouldn't be needed, but Claims doesn't seem to validate customs correctly
+fn validate_expiry_custom<T>(claims: &Claims<T>) -> bool
 where
     T: Serialize + DeserializeOwned,
 {

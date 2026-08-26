@@ -1,4 +1,7 @@
-use crate::{http, opts::*};
+use crate::{
+    http,
+    opts::{DatabaseOpts, HttpOpts, WorkerOpts},
+};
 
 use std::time::Duration;
 
@@ -21,9 +24,9 @@ pub async fn run(
     let http_client = client.clone();
 
     let task_queue = worker_opts.temporal.task_queue.clone();
-    let worker_config = crate::worker::worker_config(&worker_opts)?;
+    let worker_options = crate::worker::worker_options(&worker_opts)?;
     let worker_handle =
-        std::thread::spawn(move || crate::worker::start_worker(client, worker_config));
+        std::thread::spawn(move || crate::worker::start_worker(client, worker_options));
 
     http::start_http(pg_pool, http_client, http_opts, task_queue).await?;
 

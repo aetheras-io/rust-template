@@ -19,20 +19,22 @@ use axum_client_ip::ClientIp;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 pub fn build_app(opts: &HttpOpts, state: state::AppState) -> anyhow::Result<Router> {
-    let service_info: &'static str = Box::leak(
-        serde_json::to_string_pretty(atb_cli_utils::process_info())
-            .expect("serialize success. qed")
-            .into_boxed_str(),
-    );
+    let service_info = serde_json::to_string_pretty(atb_cli_utils::process_info())?;
 
     let allowed_origins = opts
         .origins
         .iter()
-        .map(|v| v.parse::<HeaderValue>().unwrap())
-        .collect::<Vec<HeaderValue>>();
+        .map(|origin| origin.parse::<HeaderValue>())
+        .collect::<Result<Vec<_>, _>>()?;
 
     Ok(Router::new()
-        .route("/infoz", get(move || async move { service_info }))
+        .route(
+            "/infoz",
+            get(move || {
+                let service_info = service_info.clone();
+                async move { service_info }
+            }),
+        )
         .route("/healthz", get(|| async { StatusCode::OK }))
         .nest("/auth", auth::routes())
         .merge(graphql::routes())
@@ -64,7 +66,7 @@ pub fn build_app(opts: &HttpOpts, state: state::AppState) -> anyhow::Result<Rout
                             let span = tracing::Span::current();
                             span.record("ip", ip.0.to_string());
                         } else {
-                            tracing::info!("WTF");
+                            tracing::debug!("client IP unavailable");
                         }
                         next.run(extract::Request::from_parts(parts, body)).await
                     },

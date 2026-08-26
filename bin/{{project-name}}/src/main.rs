@@ -8,8 +8,8 @@ pub mod opts;
 pub mod worker;
 
 use anyhow::Result;
-use atb::logging::init_tracer;
 use atb_cli_utils::AtbCli;
+use atb_logging::init_tracer;
 
 use crate::cli::{Cli, Commands};
 

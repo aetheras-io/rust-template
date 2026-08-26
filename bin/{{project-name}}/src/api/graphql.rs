@@ -1,8 +1,11 @@
-use super::claims::Claims;
-use crate::{graphql::AppSchema, opts::Encoder};
+use super::claims::AuthenticatedClaims;
+use crate::{
+    graphql::{MutationRoot, QueryRoot},
+    opts::Encoder,
+};
 
 use async_graphql::{
-    Data, Response as GResponse, ServerError,
+    Data, EmptySubscription, Schema, ServerError,
     http::{ALL_WEBSOCKET_PROTOCOLS, GraphiQLSource},
 };
 use async_graphql_axum::{GraphQLProtocol, GraphQLRequest, GraphQLResponse, GraphQLWebSocket};
@@ -45,8 +48,8 @@ pub fn dev_routes() -> Router<crate::api::state::AppState> {
       )
   )]
 async fn graphql_handler(
-    State(schema): State<AppSchema>,
-    claims: Claims,
+    State(schema): State<Schema<QueryRoot, MutationRoot, EmptySubscription>>,
+    claims: AuthenticatedClaims,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let span = tracing::Span::current();
@@ -65,7 +68,7 @@ async fn graphql_handler(
     let mut req = req.into_inner();
     let claims = claims.into_inner();
     let Ok(subject) = claims.subject_as_uuid() else {
-        return GResponse::from_errors(vec![ServerError::new(
+        return async_graphql::Response::from_errors(vec![ServerError::new(
             "unable to serialize UUID in claims subject".to_owned(),
             None,
         )])
@@ -89,7 +92,7 @@ async fn graphql_handler(
 
 #[allow(unused)]
 async fn graphql_ws_handler(
-    State(schema): State<AppSchema>,
+    State(schema): State<Schema<QueryRoot, MutationRoot, EmptySubscription>>,
     protocol: GraphQLProtocol,
     websocket: WebSocketUpgrade,
 ) -> Response {
@@ -107,7 +110,7 @@ async fn graphql_ws_handler(
 }
 
 async fn graphiql(State(encoder): State<Encoder>) -> impl IntoResponse {
-    use atb::fixtures::ALICE;
+    use atb_fixtures_utils::ALICE;
     use atb_types::Duration;
 
     let (claims, _, _) = encoder
@@ -124,7 +127,7 @@ async fn graphiql(State(encoder): State<Encoder>) -> impl IntoResponse {
 }
 
 async fn graphql_handler_no_auth(
-    State(schema): State<AppSchema>,
+    State(schema): State<Schema<QueryRoot, MutationRoot, EmptySubscription>>,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     tracing::info!("graphql no auth operation: {:?}", req.0.operation_name);

@@ -15,6 +15,9 @@ pub enum Error {
     #[error("Database Error {0}")]
     Sqlx(#[from] sqlx::Error),
 
+    #[error("Token creation failed")]
+    TokenIssue(#[source] anyhow::Error),
+
     #[error("Unauthorized")]
     Unauthorized(String),
 
@@ -33,6 +36,7 @@ impl Error {
                 sqlx::Error::RowNotFound => (1002, StatusCode::NOT_FOUND, None, None),
                 _ => (1002, StatusCode::INTERNAL_SERVER_ERROR, None, None),
             },
+            Self::TokenIssue(_) => (1003, StatusCode::INTERNAL_SERVER_ERROR, None, None),
             Self::Unauthorized(s) => (1008, StatusCode::UNAUTHORIZED, Some(s.to_string()), None),
             Self::InvalidIp => (2007, StatusCode::FORBIDDEN, None, None),
         }

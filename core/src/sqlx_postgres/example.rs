@@ -1,4 +1,4 @@
-use super::*;
+use sqlx::PgPool;
 
 /// Run a lightweight sanity query against the provided pool.
 pub async fn run_version_check(pool: &PgPool) -> sqlx::Result<String> {
@@ -8,7 +8,8 @@ pub async fn run_version_check(pool: &PgPool) -> sqlx::Result<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::run_version_check;
+    use crate::sqlx_postgres::{setup_test_db, teardown_test_db};
 
     #[tokio::test]
     #[ignore = "requires local postgres on localhost:5432"]

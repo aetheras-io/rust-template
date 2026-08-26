@@ -3,7 +3,7 @@ use crate::api::{errors::Error, state::AppState};
 use atb_types::{DateTime, Duration, Utc, Uuid};
 use axum::{Json, Router, extract::State, routing::post};
 use axum_client_ip::ClientIp;
-use base64::{Engine as _, engine::general_purpose};
+use base64::{Engine, engine::general_purpose};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 use validator::Validate;
@@ -24,7 +24,9 @@ pub struct LoginOutput {
 
 #[derive(Deserialize, Validate)]
 pub struct LoginInput {
+    #[validate(length(min = 1))]
     pub username: String,
+    #[validate(length(min = 1))]
     pub password: String,
     #[serde(default)]
     pub device_id: Option<Uuid>,
@@ -39,8 +41,9 @@ pub async fn login_by_username(
     ClientIp(_ip): ClientIp,
     Json(req): Json<LoginInput>,
 ) -> Result<Json<LoginOutput>, Error> {
+    req.validate()?;
     tracing::warn!(username = %req.username, "fake login");
-    let id = &atb::fixtures::ALICE;
+    let id = &atb_fixtures_utils::ALICE;
     let output = issue_user_tokens(&state, id).await?;
     Ok(Json(output))
 }
@@ -49,7 +52,7 @@ async fn issue_user_tokens(state: &AppState, user_id: &Uuid) -> Result<LoginOutp
     let (token, _, _) = state
         .jwt_encoder
         .claims_encoded(user_id, vec![], Duration::days(30), None::<()>)
-        .unwrap();
+        .map_err(Error::TokenIssue)?;
     let refresh_token = generate_refresh_token();
     let refresh_expires_at = Utc::now() + Duration::days(30);
     Ok(LoginOutput {

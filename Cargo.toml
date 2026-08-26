@@ -10,16 +10,20 @@ edition = "2024"
 publish = false
 
 [workspace.dependencies]
-atb = { git = "https://github.com/aetheras-io/atb-rs", tag = "v1.4.9", features = [
-  "fixtures",
-] }
-atb-types = { git = "https://github.com/aetheras-io/atb-rs", tag = "v1.4.9", features = [
+atb-types = { version = "2", features = [
   "jwt",
 ] }
-atb-serde-ext = { git = "https://github.com/aetheras-io/atb-rs", tag = "v1.4.9" }
-atb-tokio-ext = { git = "https://github.com/aetheras-io/atb-rs", tag = "v1.4.9" }
-atb-graphql-ext = { git = "https://github.com/aetheras-io/atb-rs", tag = "v1.4.9" }
-atb-temporal-ext = { git = "https://github.com/aetheras-io/atb-rs", tag = "v1.4.9" }
+atb-tokio-ext = "2"
+atb-fixtures-utils = { version = "2", features = [
+  "jwt",
+] }
+atb-logging = "2"
+
+temporalio-client = "0.7"
+temporalio-common = "0.7"
+temporalio-macros = "0.7"
+temporalio-sdk = "0.7"
+temporalio-workflow = "0.7"
 
 strum = { version = "0.27", features = ["derive"] }
 num_enum = { version = "0.7.5" }
@@ -36,7 +40,7 @@ reqwest = { version = "0.13", default-features = false, features = [
   "socks",
   "stream",
   "json",
-  "rustls-tls",
+  "rustls",
 ] }
 tokio = { version = "1", features = [
   "signal",

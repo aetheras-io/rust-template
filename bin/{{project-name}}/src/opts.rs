@@ -1,4 +1,7 @@
-use std::{fs, io::Read, path::PathBuf};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 use atb_cli_utils::clap::{self, Parser, ValueHint};
 use atb_types::{
@@ -21,7 +24,7 @@ pub struct HttpOpts {
     #[arg(
         long,
         value_delimiter = ';',
-        default_value = "http://localhost:8080;http://127.0.0.1:8080;http://localhost:3000;http://127.0.0.1:3001;http://localhost:3001;http://127.0.0.1:3001",
+        default_value = "http://localhost:8080;http://127.0.0.1:8080;http://localhost:3000;http://127.0.0.1:3000;http://localhost:3001;http://127.0.0.1:3001",
         env = "{{ project-name | shouty_snake_case }}_CORS_ORIGINS"
     )]
     pub origins: Vec<String>,
@@ -64,8 +67,8 @@ impl HttpOpts {
             (None, None) => {
                 tracing::info!("loading jwt from fixtures");
                 (
-                    Encoder(atb::fixtures::jwt::JWT_ENCODING_KEY.clone()),
-                    Decoder(atb::fixtures::jwt::JWT_DECODING_KEY.clone()),
+                    Encoder(atb_fixtures_utils::jwt::JWT_ENCODING_KEY.clone()),
+                    Decoder(atb_fixtures_utils::jwt::JWT_DECODING_KEY.clone()),
                 )
             }
             _ => return Err(anyhow::anyhow!("jwt cannot be disjoint")),
@@ -110,12 +113,8 @@ impl Encoder {
     }
 }
 
-pub fn load_file(file: &PathBuf) -> anyhow::Result<Vec<u8>> {
-    let mut f = fs::File::open(file)?;
-    let metadata = fs::metadata(file)?;
-    let mut buffer = vec![0; metadata.len() as usize];
-    f.read_exact(&mut buffer)?;
-    Ok(buffer)
+pub fn load_file(file: &Path) -> anyhow::Result<Vec<u8>> {
+    fs::read(file).map_err(Into::into)
 }
 
 #[derive(Clone)]

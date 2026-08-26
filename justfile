@@ -14,12 +14,27 @@ set dotenv-load
 alias b := build
 alias l := local
 alias ld := local-down
+alias t := test
 
 default:
     @just --choose
 
 semver:
     @echo {{ "{{" }}SEM_VER{{ "}}" }}
+
+fmt:
+    cargo fmt --all
+
+fmt-check:
+    cargo fmt --all --check
+
+lint:
+    cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+check: fmt-check lint
+
+test:
+    cargo test --workspace
 
 ###########################################################
 ### Build

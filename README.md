@@ -26,3 +26,21 @@ If you prefer HTTPS instead of SSH, use a personal access token (with `repo` sco
 ```sh
 cargo generate --git https://github.com/aetheras-io/rust-template.git --name my-service
 ```
+
+## Develop the template
+
+Render a clean baseline and editable copy:
+
+```sh
+./dev/test.sh
+```
+
+Make changes in `target/demo_edit`, then inspect the generated patch:
+
+```sh
+./dev/diff.sh
+```
+
+Translate accepted changes back into the placeholder-aware template sources,
+then re-render and verify the generated project with `just check` and
+`just test`.

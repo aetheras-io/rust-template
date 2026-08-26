@@ -1,8 +1,8 @@
 pub mod example;
 pub mod users;
 
-pub use sqlx::{
-    Connection, Error as SqlxError,
+use sqlx::{
+    Connection,
     migrate::Migrator,
     postgres::{PgConnectOptions, PgPool, PgPoolOptions, PgQueryResult},
 };
@@ -29,7 +29,7 @@ pub fn ensure_affected(count: u64) -> impl FnOnce(PgQueryResult) -> sqlx::Result
         if pg_done.rows_affected() == count {
             Ok(())
         } else {
-            Err(SqlxError::RowNotFound)
+            Err(sqlx::Error::RowNotFound)
         }
     }
 }
@@ -83,7 +83,7 @@ pub async fn setup_test_db(name: &'static str) -> Result<PgPool, sqlx::Error> {
 }
 
 pub async fn teardown_test_db(name: &'static str, pool: PgPool) -> Result<(), sqlx::Error> {
-    drop(pool);
+    pool.close().await;
 
     let mut conn = sqlx::PgConnection::connect(
         "postgres://postgres:123456@localhost/postgres?sslmode=disable",
