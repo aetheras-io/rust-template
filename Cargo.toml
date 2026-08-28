@@ -7,6 +7,7 @@ version = "0.1.0"
 authors = ["{{author}} <{{email}}>"]
 repository = "https://github.com/{{org}}/{{ project-name | kebab_case }}"
 edition = "2024"
+rust-version = "1.94"
 publish = false
 
 [workspace.dependencies]
@@ -25,17 +26,19 @@ temporalio-macros = "0.7"
 temporalio-sdk = "0.7"
 temporalio-workflow = "0.7"
 
-strum = { version = "0.27", features = ["derive"] }
-num_enum = { version = "0.7.5" }
+strum = { version = "0.28", features = ["derive"] }
+num_enum = { version = "0.7.6" }
 tracing = { version = "0.1" }
 anyhow = { version = "1" }
 thiserror = { version = "2" }
 serde = { version = "1" }
 serde_json = { version = "1" }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["serde", "v4"] }
 cfg-if = { version = "1" }
 once_cell = { version = "1" }
-rand = { version = "0.9" }
-base64 = { version = "0.22" }
+rand = { version = "0.10" }
+base64 = { version = "0.23" }
 reqwest = { version = "0.13", default-features = false, features = [
   "socks",
   "stream",
@@ -50,8 +53,9 @@ tokio = { version = "1", features = [
   "macros",
   "sync",
 ] }
-sqlx = { version = "0.8", default-features = false, features = [
-  "runtime-tokio-rustls",
+sqlx = { version = "0.9", default-features = false, features = [
+  "runtime-tokio",
+  "tls-rustls-ring-webpki",
   "macros",
   "postgres",
   "uuid",
@@ -64,11 +68,23 @@ sqlx = { version = "0.8", default-features = false, features = [
   "migrate",
   "ipnetwork",
 ] }
+sea-query = { version = "1.0.2", default-features = false, features = [
+  "backend-postgres",
+  "derive",
+  "thread-safe",
+  "with-chrono",
+  "with-uuid",
+] }
+sea-query-sqlx = { version = "0.9.1", default-features = false, features = [
+  "sqlx-postgres",
+  "with-chrono",
+  "with-uuid",
+] }
 ipnetwork = "0.21.1"
-futures = "0.3.31"
+futures = "0.3.34"
 futures-channel = { version = "0.3" }
 futures-util = "0.3"
-regex = { version = "1.11.1" }
-rust_decimal = { version = "1.37.2", features = [
+regex = { version = "1.13.1" }
+rust_decimal = { version = "1.42.1", features = [
   "serde-with-arbitrary-precision",
 ] }

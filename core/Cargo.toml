@@ -4,6 +4,7 @@ version.workspace = true
 authors.workspace = true
 repository.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 
 [lib]
 path = "src/lib.rs"
@@ -12,12 +13,16 @@ path = "src/lib.rs"
 anyhow = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
 tokio = { workspace = true }
 futures = { workspace = true }
 once_cell = { workspace = true }
 sqlx = { workspace = true }
+sea-query = { workspace = true }
+sea-query-sqlx = { workspace = true }
 atb-types = { workspace = true }
 
 temporalio-client = { workspace = true }

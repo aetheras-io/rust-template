@@ -48,7 +48,14 @@ cd core && cargo test ${specific_test_name}
 ### Database Queries
 
 - SQLx helpers live under `core/src/sqlx_postgres`. The `users` module includes
-  CRUD examples plus a transaction that creates a user and MFA method together.
+  CRUD examples, a transaction that creates a user and MFA method together, and
+  user-scoped SeaQuery keyset pagination using a stable `(created_at, id)` cursor.
+- Use SeaQuery for genuinely dynamic query structure and keep runtime values in
+  bind parameters. The SQLx 0.9 `AssertSqlSafe` call should remain at the audited
+  SeaQuery-to-SQLx handoff; do not pass user input through custom SQL fragments.
+- `bin/{{ project-name | kebab_case }}/src/graphql.rs` exposes the authenticated
+  user's non-secret MFA method metadata as a forward Relay connection with
+  opaque `(created_at, id)` cursors.
 - Reusable query helpers that work with either a pool or transaction use the
   `PgExecutor` trait in `core/src/sqlx_postgres/users.rs`.
 - Connection and migration helpers are centralized in

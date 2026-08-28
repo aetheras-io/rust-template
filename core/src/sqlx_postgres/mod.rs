@@ -35,18 +35,7 @@ pub fn ensure_affected(count: u64) -> impl FnOnce(PgQueryResult) -> sqlx::Result
 }
 
 pub async fn migrate(pg_pool: &PgPool) -> sqlx::Result<()> {
-    let mut v: Vec<sqlx::migrate::Migration> = vec![];
-    v.extend(EMBEDDED_MIGRATE.migrations.iter().cloned());
-
-    //#NOTE lucidstream_pg::migrate generates some functions required by eg migration
-    sqlx::migrate::Migrator {
-        migrations: std::borrow::Cow::Owned(v),
-        ignore_missing: false,
-        locking: true,
-        no_tx: false,
-    }
-    .run(pg_pool)
-    .await?;
+    EMBEDDED_MIGRATE.run(pg_pool).await?;
     Ok(())
 }
 
@@ -58,17 +47,21 @@ pub async fn setup_test_db(name: &'static str) -> Result<PgPool, sqlx::Error> {
     .await?;
 
     let db_name = format!("test_{name}");
-    let res = sqlx::query(&format!("CREATE DATABASE \"{db_name}\""))
-        .execute(&mut conn)
-        .await;
+    let res = sqlx::query(sqlx::AssertSqlSafe(format!(
+        "CREATE DATABASE \"{db_name}\""
+    )))
+    .execute(&mut conn)
+    .await;
     if res.is_err() {
         println!("WARNING: {db_name} already exists, dropping");
-        sqlx::query(&format!("DROP DATABASE \"{db_name}\""))
+        sqlx::query(sqlx::AssertSqlSafe(format!("DROP DATABASE \"{db_name}\"")))
             .execute(&mut conn)
             .await?;
-        sqlx::query(&format!("CREATE DATABASE \"{db_name}\""))
-            .execute(&mut conn)
-            .await?;
+        sqlx::query(sqlx::AssertSqlSafe(format!(
+            "CREATE DATABASE \"{db_name}\""
+        )))
+        .execute(&mut conn)
+        .await?;
     }
 
     let db_url = format!("postgres://postgres:123456@localhost:5432/{db_name}?sslmode=disable");
@@ -91,7 +84,7 @@ pub async fn teardown_test_db(name: &'static str, pool: PgPool) -> Result<(), sq
     .await?;
 
     let db_name = format!("test_{name}");
-    sqlx::query(&format!("DROP DATABASE \"{db_name}\""))
+    sqlx::query(sqlx::AssertSqlSafe(format!("DROP DATABASE \"{db_name}\"")))
         .execute(&mut conn)
         .await?;
     Ok(())

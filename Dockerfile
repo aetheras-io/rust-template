@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM rust:1.91.1 AS rust-base
+FROM rust:1.94.0 AS rust-base
 WORKDIR /app
 RUN cargo install cargo-chef
 

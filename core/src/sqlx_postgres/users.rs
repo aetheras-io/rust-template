@@ -1,6 +1,23 @@
 use super::ensure_affected;
+use sea_query::{Expr, ExprTrait, Iden, Order, PostgresQueryBuilder, Query, SelectStatement};
+use sea_query_sqlx::SqlxBinder;
 use sqlx::{Error, PgPool};
 use sqlx::{Executor, Postgres};
+
+const DEFAULT_USER_PAGE_SIZE: u32 = 25;
+const MAX_USER_PAGE_SIZE: u32 = 100;
+
+#[derive(Iden)]
+#[iden = "user_mfa_methods"]
+enum UserMfaMethods {
+    Table,
+    Id,
+    UserId,
+    Kind,
+    Secret,
+    CreatedAt,
+    UpdatedAt,
+}
 
 #[derive(Debug, Clone, sqlx::FromRow)]
 pub struct User {
@@ -18,6 +35,19 @@ pub struct UserMfaMethod {
     pub secret: String,
     pub created_at: sqlx::types::chrono::DateTime<sqlx::types::chrono::Utc>,
     pub updated_at: sqlx::types::chrono::DateTime<sqlx::types::chrono::Utc>,
+}
+
+/// A stable keyset cursor for a user's MFA methods ordered newest-first.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct UserMfaCursor {
+    pub created_at: sqlx::types::chrono::DateTime<sqlx::types::chrono::Utc>,
+    pub id: sqlx::types::Uuid,
+}
+
+#[derive(Debug, Clone)]
+pub struct UserMfaPage {
+    pub methods: Vec<UserMfaMethod>,
+    pub next_cursor: Option<UserMfaCursor>,
 }
 
 pub trait PgExecutor<'c>: Executor<'c, Database = Postgres> {}
@@ -106,6 +136,84 @@ pub async fn list_mfa_methods(
     .await
 }
 
+/// List only the authenticated user's MFA methods with keyset pagination.
+///
+/// SeaQuery owns the dynamic SQL structure while the user scope, cursor, and
+/// limit stay as SQLx bind parameters. The `AssertSqlSafe` call is the audited
+/// handoff between those two libraries; it does not perform sanitization itself.
+pub async fn list_mfa_methods_page(
+    pool: &PgPool,
+    user_id: sqlx::types::Uuid,
+    after: Option<UserMfaCursor>,
+    page_size: Option<u32>,
+) -> Result<UserMfaPage, Error> {
+    let page_size = page_size
+        .unwrap_or(DEFAULT_USER_PAGE_SIZE)
+        .clamp(1, MAX_USER_PAGE_SIZE);
+    let statement = mfa_methods_page_statement(user_id, after, u64::from(page_size) + 1);
+    let (sql, values) = statement.build_sqlx(PostgresQueryBuilder);
+
+    let mut methods: Vec<UserMfaMethod> = sqlx::query_as_with(sqlx::AssertSqlSafe(sql), values)
+        .fetch_all(pool)
+        .await?;
+    let has_next_page = methods.len() > page_size as usize;
+    methods.truncate(page_size as usize);
+    let next_cursor = has_next_page
+        .then(|| methods.last().map(UserMfaCursor::from))
+        .flatten();
+
+    Ok(UserMfaPage {
+        methods,
+        next_cursor,
+    })
+}
+
+fn mfa_methods_page_statement(
+    user_id: sqlx::types::Uuid,
+    after: Option<UserMfaCursor>,
+    fetch_limit: u64,
+) -> SelectStatement {
+    let mut statement = Query::select();
+    statement
+        .columns([
+            UserMfaMethods::Id,
+            UserMfaMethods::UserId,
+            UserMfaMethods::Kind,
+            UserMfaMethods::Secret,
+            UserMfaMethods::CreatedAt,
+            UserMfaMethods::UpdatedAt,
+        ])
+        .from(UserMfaMethods::Table)
+        .and_where(Expr::col(UserMfaMethods::UserId).eq(user_id))
+        .order_by(UserMfaMethods::CreatedAt, Order::Desc)
+        .order_by(UserMfaMethods::Id, Order::Desc)
+        .limit(fetch_limit);
+
+    if let Some(after) = after {
+        statement.cond_where(
+            Expr::tuple([
+                Expr::col(UserMfaMethods::CreatedAt),
+                Expr::col(UserMfaMethods::Id),
+            ])
+            .lt(Expr::tuple([
+                Expr::value(after.created_at),
+                Expr::value(after.id),
+            ])),
+        );
+    }
+
+    statement.to_owned()
+}
+
+impl From<&UserMfaMethod> for UserMfaCursor {
+    fn from(method: &UserMfaMethod) -> Self {
+        Self {
+            created_at: method.created_at,
+            id: method.id,
+        }
+    }
+}
+
 pub async fn delete_mfa_method(pool: &PgPool, mfa_id: sqlx::types::Uuid) -> Result<(), Error> {
     sqlx::query("DELETE FROM user_mfa_methods WHERE id = $1")
         .bind(mfa_id)
@@ -161,4 +269,27 @@ pub async fn add_mfa_method_with_executor<'c, T: PgExecutor<'c>>(
     .bind(secret)
     .fetch_one(executor)
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn mfa_page_query_binds_user_scope_and_keyset_cursor() {
+        let user_id = sqlx::types::Uuid::from_u128(1);
+        let cursor = UserMfaCursor {
+            created_at: "2026-01-24T12:00:00Z".parse().expect("valid timestamp"),
+            id: sqlx::types::Uuid::nil(),
+        };
+
+        let (sql, values) =
+            mfa_methods_page_statement(user_id, Some(cursor), 26).build(PostgresQueryBuilder);
+
+        assert!(sql.contains(r#"WHERE "user_id" = $1"#));
+        assert!(sql.contains(r#"("created_at", "id") < ($2, $3)"#));
+        assert!(sql.contains(r#"ORDER BY "created_at" DESC, "id" DESC"#));
+        assert!(sql.ends_with("LIMIT $4"), "{sql}");
+        assert_eq!(values.0.len(), 4, "{sql}");
+    }
 }

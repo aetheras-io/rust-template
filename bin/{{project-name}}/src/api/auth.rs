@@ -63,7 +63,7 @@ async fn issue_user_tokens(state: &AppState, user_id: &Uuid) -> Result<LoginOutp
 }
 
 fn generate_refresh_token() -> String {
-    use rand::RngCore;
+    use rand::Rng;
     let mut rng = rand::rng();
     let mut bytes = [0u8; 32];
     rng.fill_bytes(&mut bytes);
