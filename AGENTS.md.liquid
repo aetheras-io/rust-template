@@ -26,15 +26,6 @@ cargo test -p {{project-name}}-core ${specific_test_name}
 cd core && cargo test ${specific_test_name}
 ```
 
-## When you need to call tools from the shell, use this rubric
-
-- Find Files: `fd`
-- Find Text: `rg` (ripgrep)
-- Find Code Structure: `ast-grep`
-- Select among matches: pipe to `fzf`
-- JSON: `jq`
-- YAML/XML: `yq`
-
 ## Backend Coding Practices
 
 - **Workspace layout**: Application logic is split between a binary crate under
