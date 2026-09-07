@@ -60,7 +60,7 @@ cd core && cargo test ${specific_test_name}
 
 ### Temporal Workflows
 
-Use the official native Temporal Rust SDK macros and typed APIs directly. Reference the existing
+Use the official native Temporal Rust SDK 1.0 macros and typed APIs directly. Reference the existing
 wiring instead of adding an application-specific SDK abstraction:
 
 - `core/src/temporal/mod.rs` centralizes Temporal client setup, plus example
@@ -71,3 +71,7 @@ wiring instead of adding an application-specific SDK abstraction:
   created and tasks registered.
 - `bin/{{ project-name | kebab_case }}/src/http.rs` and
   `bin/{{ project-name | kebab_case }}/src/mono.rs` show workflow engine usage.
+
+Use client-owned policy enums from `temporalio_client` and construct SDK options
+with their builders or defaults. Use `Runtime::from_current_tokio` inside an active
+Tokio runtime. Keep experimental features disabled unless a workflow needs them.

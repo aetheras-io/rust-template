@@ -42,7 +42,7 @@ pub fn start_worker(client: Client, worker_options: WorkerOptions) -> anyhow::Re
         .enable_all()
         .build()?
         .block_on(async move {
-            let runtime = Runtime::new_assume_tokio(Default::default())?;
+            let runtime = Runtime::from_current_tokio(Default::default())?;
             let mut worker = Worker::new(&runtime, client, worker_options)?;
             let shutdown_worker = worker.shutdown_handle();
             let shutdown_task = tokio::spawn(async move {

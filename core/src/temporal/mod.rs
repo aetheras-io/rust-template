@@ -1,8 +1,9 @@
 use std::{str::FromStr, time::Duration};
 
 use atb_types::Uuid;
-use temporalio_client::{Client, ClientOptions, ConnectionOptions, Url, WorkflowStartOptions};
-use temporalio_common::protos::temporal::api::enums::v1::WorkflowIdReusePolicy;
+use temporalio_client::{
+    Client, ClientOptions, ConnectionOptions, Url, WorkflowIdReusePolicy, WorkflowStartOptions,
+};
 use temporalio_macros::{activities, workflow, workflow_methods};
 use temporalio_sdk::{
     ActivityOptions, WorkflowContext, WorkflowResult,
@@ -143,7 +144,7 @@ mod tests {
             WorkflowEnvironment::start_local(LocalWorkflowEnvironmentOptions::default())
                 .await
                 .expect("start Temporal test environment");
-        let runtime = Runtime::new_assume_tokio(Default::default()).expect("Temporal runtime");
+        let runtime = Runtime::from_current_tokio(Default::default()).expect("Temporal runtime");
         let worker_options = WorkerOptions::new(TASK_QUEUE)
             .register_workflow::<HealthCheckWorkflow>()
             .expect("register workflow")
