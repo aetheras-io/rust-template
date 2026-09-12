@@ -1,5 +1,5 @@
 [workspace]
-members = ["core", "bin/{{project-name}}"]
+members = ["crates/core", "bin/{{project-name}}"]
 resolver = "2"
 
 [workspace.package]

@@ -1,4 +1,4 @@
-let dir = "core/migrations";
+let dir = "crates/core/migrations";
 let gitkeep = dir + "/.gitkeep";
 
 // Remove .gitkeep if present
