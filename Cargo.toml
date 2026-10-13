@@ -11,41 +11,41 @@ rust-version = "1.94"
 publish = false
 
 [workspace.dependencies]
-atb-types = { version = "2", features = [
+atb-types = { version = "2.1.0", features = [
   "jwt",
 ] }
-atb-tokio-ext = "2"
-atb-fixtures-utils = { version = "2", features = [
+atb-tokio-ext = "2.1.0"
+atb-fixtures-utils = { version = "2.1.0", features = [
   "jwt",
 ] }
-atb-logging = "2"
+atb-logging = "2.1.0"
 
-temporalio-client = "1.0.0"
-temporalio-common = "1.0.0"
-temporalio-macros = "1.0.0"
-temporalio-sdk = "1.0.0"
-temporalio-workflow = "1.0.0"
+temporalio-client = "1.1.0"
+temporalio-common = "1.1.0"
+temporalio-macros = "1.1.0"
+temporalio-sdk = "1.1.0"
+temporalio-workflow = "1.1.0"
 
-strum = { version = "0.28", features = ["derive"] }
+strum = { version = "0.28.0", features = ["derive"] }
 num_enum = { version = "0.7.6" }
-tracing = { version = "0.1" }
-anyhow = { version = "1" }
-thiserror = { version = "2" }
-serde = { version = "1" }
-serde_json = { version = "1" }
-chrono = { version = "0.4", features = ["serde"] }
-uuid = { version = "1", features = ["serde", "v4"] }
-cfg-if = { version = "1" }
-once_cell = { version = "1" }
-rand = { version = "0.10" }
-base64 = { version = "0.23" }
-reqwest = { version = "0.13", default-features = false, features = [
+tracing = { version = "0.1.44" }
+anyhow = { version = "1.0.104" }
+thiserror = { version = "2.0.21" }
+serde = { version = "1.0.229" }
+serde_json = { version = "1.0.154" }
+chrono = { version = "0.4.45", features = ["serde"] }
+uuid = { version = "1.28.0", features = ["serde", "v4"] }
+cfg-if = { version = "1.0.5" }
+once_cell = { version = "1.21.4" }
+rand = { version = "0.10.3" }
+base64 = { version = "0.23.1" }
+reqwest = { version = "0.13.5", default-features = false, features = [
   "socks",
   "stream",
   "json",
   "rustls",
 ] }
-tokio = { version = "1", features = [
+tokio = { version = "1.53.2", features = [
   "signal",
   "rt-multi-thread",
   "net",
@@ -53,7 +53,7 @@ tokio = { version = "1", features = [
   "macros",
   "sync",
 ] }
-sqlx = { version = "0.9", default-features = false, features = [
+sqlx = { version = "0.9.0", default-features = false, features = [
   "runtime-tokio",
   "tls-rustls-ring-webpki",
   "macros",
@@ -82,9 +82,9 @@ sea-query-sqlx = { version = "0.9.1", default-features = false, features = [
 ] }
 ipnetwork = "0.21.1"
 futures = "0.3.34"
-futures-channel = { version = "0.3" }
-futures-util = "0.3"
+futures-channel = { version = "0.3.34" }
+futures-util = "0.3.34"
 regex = { version = "1.13.1" }
-rust_decimal = { version = "1.42.1", features = [
+rust_decimal = { version = "1.43.0", features = [
   "serde-with-arbitrary-precision",
 ] }

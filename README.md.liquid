@@ -13,7 +13,7 @@ This project was bootstrapped from <https://github.com/aetheras-io/rust-template
 
 ## Temporal SDK
 
-Generated projects use Temporal Rust SDK 1.0.0 with typed workflows and activities.
+Generated projects use Temporal Rust SDK 1.1.0 with typed workflows and activities.
 Client policies such as `WorkflowIdReusePolicy` come from `temporalio_client`;
 workers attach to the active Tokio runtime with `Runtime::from_current_tokio`.
 The example uses stable APIs and does not enable the SDK's `experimental` feature.
@@ -30,5 +30,6 @@ The workflow test downloads and starts an ephemeral Temporal CLI dev server;
 it requires network access on the first run but no PostgreSQL instance.
 The `temporal-tests` feature enables SDK testing and the downloader's TLS backend.
 
-Migration references: [0.8.0 release notes](https://github.com/temporalio/sdk-rust/releases/tag/v0.8.0)
-and [1.0.0 release notes](https://github.com/temporalio/sdk-rust/releases/tag/v1.0.0).
+Migration references: [0.8.0 release notes](https://github.com/temporalio/sdk-rust/releases/tag/v0.8.0),
+[1.0.0 release notes](https://github.com/temporalio/sdk-rust/releases/tag/v1.0.0),
+and [1.1.0 release notes](https://github.com/temporalio/sdk-rust/releases/tag/v1.1.0).

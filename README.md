@@ -45,7 +45,8 @@ Translate accepted changes back into the placeholder-aware template sources,
 then re-render and verify the generated project with `just check` and
 `just test`.
 
-Generated services use Temporal Rust SDK 1.0.0. See `README.md.liquid` for the
+Generated services use Temporal Rust SDK 1.1.0. See `README.md.liquid` for the
 Temporal test commands rendered into each project. The migration follows the
-[0.8.0](https://github.com/temporalio/sdk-rust/releases/tag/v0.8.0) and
-[1.0.0](https://github.com/temporalio/sdk-rust/releases/tag/v1.0.0) release notes.
+[0.8.0](https://github.com/temporalio/sdk-rust/releases/tag/v0.8.0),
+[1.0.0](https://github.com/temporalio/sdk-rust/releases/tag/v1.0.0), and
+[1.1.0](https://github.com/temporalio/sdk-rust/releases/tag/v1.1.0) release notes.
