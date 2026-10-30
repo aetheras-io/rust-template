@@ -12,7 +12,6 @@ RUN cargo chef prepare --recipe-path recipe.json
 # Cached Builder
 FROM rust-base AS builder
 WORKDIR /app
-ENV RUSTFLAGS="-C target-cpu=x86-64-v2"
 
 RUN cargo install cargo-chef
 COPY --from=planner /app/recipe.json recipe.json

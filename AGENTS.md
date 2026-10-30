@@ -11,3 +11,7 @@ in `demo_edit`, then run `./dev/diff.sh`. The diff is printed and written to
 `./target/demo.patch`; translate that patch back into the placeholder-aware
 template sources. Re-render afterward and run formatting, Clippy, and tests in
 the generated project.
+
+## Dockerfiles
+
+Agents must not create, modify, rename, or delete Dockerfiles.
